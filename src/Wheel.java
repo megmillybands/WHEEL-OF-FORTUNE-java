@@ -3,72 +3,30 @@ import java.util.*;
 
 public class Wheel {
 
-    static String url = "jdbc:postgresql://localhost:5432/database";
-    static String user = "postgres";
-    static String password = "testingpassword";
-    static String puzzlesQuery = "SELECT * FROM puzzles";
-    String playersQuery = "SELECT * FROM players";
+    static List<Integer> wheel = List.of(800,350,450,5000,300,600,700,600,500,300,500,800,550,300,900,500,300,900,350,600,400,300);
 
-    static Connection con;
-    static {
-        try {
-            con = DriverManager.getConnection(url,user,password);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public static List<String> getRandomPuzzle() throws SQLException {
+        Statement stmt = Main.con.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT * FROM puzzles ORDER BY random() LIMIT 1");
+
+        String randomPuzzle = null;
+        String randomCategory = null;
+        List<String> randomItems = new ArrayList<>();
+
+        if (rs.next()) {
+            randomPuzzle = rs.getString("puzzle_hidden");
+            randomCategory = rs.getString("category");
+            randomItems.add(randomPuzzle);
+            randomItems.add(randomCategory);
         }
+
+        return randomItems;
     }
 
-    static Statement stmt;
-    static {
-        try {
-            stmt = con.createStatement();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    static ResultSet rs;
-
-
-    List<Integer> wheel = List.of(800,350,450,5000,300,600,700,600,500,300,500,800,550,300,900,500,300,900,350,600,400,300);
-
-    public static void createPlayer() throws SQLException {
-        PreparedStatement pstmt = con.prepareStatement("INSERT INTO players (player_name, player_money) VALUES (?, ?)");
-
-        Scanner playerScanner = new Scanner(System.in);
-        String playerName = playerScanner.nextLine();
-
-        pstmt.setString(1, playerName);
-        pstmt.setInt(2, 0);
-
-        int newPlayer = pstmt.executeUpdate();
-    }
-
-    public int spinTheWheel() {
+    public static int spinTheWheel() {
         Random random = new Random();
         int randomIndex = random.nextInt(wheel.size());
-        System.out.println(wheel.get(randomIndex));
         return wheel.get(randomIndex);
     }
 
-    public static String getRandomPuzzle() throws SQLException {
-        rs = stmt.executeQuery(puzzlesQuery);
-        String allPuzzles = rs.getString("puzzle_solution");
-
-        Random random = new Random();
-        return random.toString();
-    }
-
-    public void findAllOccurrences() throws SQLException {
-        System.out.println(rs.getString("puzzle_id"));
-        while (rs.next()) {
-
-            System.out.println(rs.getString("name"));
-
-        }
-    }
-
-    public Wheel() throws SQLException {
-
-    }
 }

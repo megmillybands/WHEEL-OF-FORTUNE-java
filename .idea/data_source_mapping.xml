@@ -2,6 +2,9 @@
 <project version="4">
   <component name="DataSourcePerFileMappings">
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/9d4f5c41-8471-4150-bb50-3e2b39c8a5f4/console.sql" value="9d4f5c41-8471-4150-bb50-3e2b39c8a5f4" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/9d4f5c41-8471-4150-bb50-3e2b39c8a5f4/console_1.sql" value="9d4f5c41-8471-4150-bb50-3e2b39c8a5f4" />
+    <file url="file://$PROJECT_DIR$/src/Main.java" value="9d4f5c41-8471-4150-bb50-3e2b39c8a5f4" />
+    <file url="file://$PROJECT_DIR$/src/Players.java" value="9d4f5c41-8471-4150-bb50-3e2b39c8a5f4" />
     <file url="file://$PROJECT_DIR$/src/Wheel.java" value="9d4f5c41-8471-4150-bb50-3e2b39c8a5f4" />
   </component>
 </project>
