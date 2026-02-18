@@ -69,6 +69,7 @@ public class Main {
                 currentPlayer = player3;
             } else {
                 currentPlayer = player1;
+                player = 1;
             }
 
             System.out.println("\n" + currentPlayer + ", it's your turn!\n");
@@ -78,26 +79,35 @@ public class Main {
 
             System.out.println("\nWould you like to [spin] the wheel, [buy] a vowel, or [solve] the puzzle?\n");
             Scanner input = new Scanner(System.in);
-            String choice = input.nextLine();
+            String choice = input.nextLine().toLowerCase();
 
-            if (choice.equals("spin")) {
-                int spinResult = Wheel.spinTheWheel();
-                System.out.println("\n" + spinResult + "!\n");
-                Thread.sleep(1000);
+            switch (choice) {
+                case "spin" -> {
+                    int spinResult = Wheel.spinTheWheel();
+                    System.out.println("\n" + spinResult + "!\n");
+                    Thread.sleep(1000);
 
-                System.out.println("Now, pick a letter: \n");
-                Scanner input2 = new Scanner(System.in);
-                char letter = input2.next().charAt(0);
+                    System.out.println("Now, pick a letter: \n");
+                    Scanner input2 = new Scanner(System.in);
+                    char letter = input2.nextLine().toUpperCase().charAt(0);
 
-                if (Wheel.isVowel(letter)) {
-                    System.out.println("\nPlease select a consonant.");
+                    if (Wheel.isVowel(letter)) {
+                        System.out.println("\nPlease select a consonant.");
+                    } else if (Wheel.selectedThisRound(letter)) {
+                        System.out.println("\nThis letter has already been selected.");
+                    } else {
+                        if (!Wheel.flipLettersAndIsValid(letter, (Integer) puzzle.get(2), currentPlayer, spinResult)) {
+                            player++;
+                        }
+                    }
                 }
-                else if (Wheel.selectedThisRound(letter)) {
-                    System.out.println("\nThis letter has already been selected.");
+                case "buy" -> {
+
                 }
-                else {
-                    Wheel.flipLetters(letter, (Integer) puzzle.get(2), currentPlayer, spinResult);
+                case "solve" -> {
+
                 }
+                default -> System.out.println("Invalid choice.");
             }
         }
 

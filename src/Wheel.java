@@ -26,11 +26,13 @@ public class Wheel {
         return randomItems;
     }
 
+
     public static int spinTheWheel() {
         Random random = new Random();
         int randomIndex = random.nextInt(wheel.size());
         return wheel.get(randomIndex);
     }
+
 
     public static boolean isVowel(char letter) throws SQLException {
         Statement stmt = Main.con.createStatement();
@@ -46,6 +48,7 @@ public class Wheel {
 
         return letterIsVowel;
     }
+
 
     public static boolean selectedThisRound(char letter) throws SQLException {
         Statement stmt = Main.con.createStatement();
@@ -64,7 +67,8 @@ public class Wheel {
         return letterAlreadySelected;
     }
 
-    static void flipLetters(char letter, int puzzleId, String currentPlayer, int spinResult) throws SQLException {
+
+    static boolean flipLettersAndIsValid(char letter, int puzzleId, String currentPlayer, int spinResult) throws SQLException {
         Statement stmt = Main.con.createStatement();
 
         ResultSet rsGetPuzzles = stmt.executeQuery("SELECT * FROM puzzles WHERE puzzle_id = " + puzzleId);
@@ -77,27 +81,38 @@ public class Wheel {
         rsGetPuzzles.close();
 
         int count = 0;
+        int i = 0;
         List<Integer> indexes = new ArrayList<>();
 
-        for (int i = 0; i < puzzleSolution.length(); i++) {
+        while (i < puzzleSolution.length()) {
             if (puzzleSolution.charAt(i) == letter) {
                 count++;
                 indexes.add(i);
             }
+            i++;
         }
 
-        System.out.println("\nWe have " + count + " of that letter!");
+        if (count > 0) {
+            System.out.println("\nWe have " + count + " of that letter!");
+
+            i = 0;
 
 
-
-        ResultSet rsGetPlayerMoney = stmt.executeQuery("SELECT * FROM players WHERE player_name = '" + currentPlayer + "'");
-        PreparedStatement pstmt = Main.con.prepareStatement("UPDATE players SET player_money = ? WHERE player_name = '" + currentPlayer + "'");
-        rsGetPlayerMoney.next();
-        int existingPlayerMoney = rsGetPlayerMoney.getInt("player_money");
-        pstmt.setDouble(1, (existingPlayerMoney + (spinResult * count)));
-        pstmt.executeUpdate();
-
-        rsGetPlayerMoney.close();
-
+            ResultSet rsGetPlayerMoney = stmt.executeQuery("SELECT * FROM players WHERE player_name = '" + currentPlayer + "'");
+            PreparedStatement pstmt = Main.con.prepareStatement("UPDATE players SET player_money = ? WHERE player_name = '" + currentPlayer + "'");
+            rsGetPlayerMoney.next();
+            int existingPlayerMoney = rsGetPlayerMoney.getInt("player_money");
+            pstmt.setDouble(1, (existingPlayerMoney + (spinResult * count)));
+            pstmt.executeUpdate();
+            rsGetPlayerMoney.close();
+            return true;
+        }
+        else {
+            System.out.println("\nSorry! There are none of those in this puzzle.");
+            return false;
+        }
     }
+
+
+
 }
