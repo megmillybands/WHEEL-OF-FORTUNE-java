@@ -41,7 +41,7 @@ public class Main {
         System.out.println("\nLet's begin the first round.");
         Thread.sleep(1000);
 
-        List<String> puzzle = Wheel.getRandomPuzzle();
+        List<Object> puzzle = Wheel.getRandomPuzzle();
 
         System.out.println("\nThe category is: \n" + puzzle.get(1));
         Thread.sleep(1000);
@@ -59,7 +59,7 @@ public class Main {
         rsPlayers.close();
 
         int player = 1;
-        String currentPlayer = player1;
+        String currentPlayer;
         while (true) {
             if (player == 1) {
                 currentPlayer = player1;
@@ -81,15 +81,26 @@ public class Main {
             String choice = input.nextLine();
 
             if (choice.equals("spin")) {
-                int result = Wheel.spinTheWheel();
-                System.out.println("\n" + result + "!\n");
+                int spinResult = Wheel.spinTheWheel();
+                System.out.println("\n" + spinResult + "!\n");
                 Thread.sleep(1000);
 
                 System.out.println("Now, pick a letter: \n");
                 Scanner input2 = new Scanner(System.in);
-                String letter = input2.nextLine();
-            }
+                char letter = input2.next().charAt(0);
 
+                if (Wheel.isVowel(letter)) {
+                    System.out.println("\nPlease select a consonant.");
+                }
+                else if (Wheel.selectedThisRound(letter)) {
+                    System.out.println("\nThis letter has already been selected.");
+                }
+                else {
+                    Wheel.flipLetters(letter, (Integer) puzzle.get(2), currentPlayer, spinResult);
+                }
+            }
         }
+
+//        dump player database table
     }
 }
