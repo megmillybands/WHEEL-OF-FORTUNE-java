@@ -17,7 +17,9 @@ public class Main {
         }
     }
 
-    void main(String[] args) throws InterruptedException, SQLException {
+    @SuppressWarnings("BusyWait")
+    void main() throws InterruptedException, SQLException {
+        Statement stmt = con.createStatement();
 
         System.out.println("WHEEL...");
         Thread.sleep(1000);
@@ -26,14 +28,14 @@ public class Main {
         System.out.println("FORTUNE!");
         Thread.sleep(1000);
 
-        System.out.println("\nWelcome to Wheel of Fortune! Lined up for you are 3 rounds, each with a unique puzzle, plus a bonus round.\nThis game requires 3 players to play.\n");
+        System.out.println("\nWelcome to Wheel of Fortune! Lined up for you are 3 rounds, each with a unique puzzle, plus a bonus round.\nThis game requires 3 players to play.");
         Thread.sleep(1000);
 
-        System.out.println("Player 1, please enter your name: ");
+        System.out.println("\nPlayer 1, please enter your name: ");
         Players.createPlayer();
-        System.out.println("Player 2, please enter your name: ");
+        System.out.println("\nPlayer 2, please enter your name: ");
         Players.createPlayer();
-        System.out.println("Player 3, please enter your name: ");
+        System.out.println("\nPlayer 3, please enter your name: ");
         Players.createPlayer();
 
         System.out.println("\nAre you ready?");
@@ -48,7 +50,6 @@ public class Main {
         System.out.println("\nAnd here is the puzzle: \n" + puzzle.get(0));
         Thread.sleep(1000);
 
-        Statement stmt = con.createStatement();
         ResultSet rsPlayers = stmt.executeQuery("SELECT * FROM players");
         rsPlayers.next();
         String player1 = rsPlayers.getString("player_name");
@@ -60,57 +61,110 @@ public class Main {
 
         int player = 1;
         String currentPlayer;
-        while (true) {
-            if (player == 1) {
-                currentPlayer = player1;
-            } else if (player == 2) {
-                currentPlayer = player2;
-            } else if (player == 3) {
-                currentPlayer = player3;
-            } else {
-                currentPlayer = player1;
-                player = 1;
-            }
+        String puzzleHidden = "---";
 
-            System.out.println("\n" + currentPlayer + ", it's your turn!\n");
+        end:
+            while (puzzleHidden.contains("-")) {
+                if (player == 1) {
+                    currentPlayer = player1;
+                } else if (player == 2) {
+                    currentPlayer = player2;
+                } else if (player == 3) {
+                    currentPlayer = player3;
+                } else {
+                    currentPlayer = player1;
+                    player = 1;
+                }
 
-            System.out.println(puzzle.get(0));
-            System.out.println(puzzle.get(1));
+                System.out.println("\n" + currentPlayer + ", it's your turn!\n");
+                Thread.sleep(1000);
 
-            System.out.println("\nWould you like to [spin] the wheel, [buy] a vowel, or [solve] the puzzle?\n");
-            Scanner input = new Scanner(System.in);
-            String choice = input.nextLine().toLowerCase();
+                ResultSet rs = stmt.executeQuery("SELECT * FROM puzzles WHERE puzzle_id = " + puzzle.get(2));
+                rs.next();
+                puzzleHidden =  rs.getString("puzzle_hidden");
+                rs.close();
 
-            switch (choice) {
-                case "spin" -> {
-                    int spinResult = Wheel.spinTheWheel();
-                    System.out.println("\n" + spinResult + "!\n");
-                    Thread.sleep(1000);
+                System.out.println(puzzleHidden);
+                System.out.println(puzzle.get(1) + "\n");
 
-                    System.out.println("Now, pick a letter: \n");
-                    Scanner input2 = new Scanner(System.in);
-                    char letter = input2.nextLine().toUpperCase().charAt(0);
+                int currentPlayerMoney = Players.currentPlayerMoney(currentPlayer);
+                System.out.println("You currently have $" + currentPlayerMoney + ".");
 
-                    if (Wheel.isVowel(letter)) {
-                        System.out.println("\nPlease select a consonant.");
-                    } else if (Wheel.selectedThisRound(letter)) {
-                        System.out.println("\nThis letter has already been selected.");
-                    } else {
-                        if (!Wheel.flipLettersAndIsValid(letter, (Integer) puzzle.get(2), currentPlayer, spinResult)) {
-                            player++;
+                System.out.println("Would you like to [spin] the wheel, [buy] a vowel, [solve] the puzzle, or [end] the game early?\n");
+                Scanner input = new Scanner(System.in);
+                String choice = input.nextLine().toLowerCase();
+
+
+                switch (choice) {
+                    case "spin" -> {
+                        int spinResult = Wheel.spinTheWheel();
+                        System.out.print("\nSpinning");
+                        Thread.sleep(333);
+                        System.out.print(".");
+                        Thread.sleep(333);
+                        System.out.print(".");
+                        Thread.sleep(333);
+                        System.out.print(".");
+                        Thread.sleep(1000);
+                        System.out.println("\n\n" + spinResult + "!\n");
+                        Thread.sleep(1000);
+
+                        System.out.println("Now, pick a letter: \n");
+                        Scanner input2 = new Scanner(System.in);
+                        char letter = input2.nextLine().toUpperCase().charAt(0);
+
+                        if (Wheel.isVowel(letter)) {
+                            System.out.println("\nPlease select a consonant.");
+                            Thread.sleep(1000);
+                        } else if (Wheel.selectedThisRound(letter)) {
+                            System.out.println("\nThis letter has already been selected.");
+                            Thread.sleep(1000);
+                        } else {
+                            if (!Wheel.flipLettersAndIsValid(letter, (Integer) puzzle.get(2), currentPlayer, spinResult)) {
+                                player++;
+                            }
                         }
                     }
-                }
-                case "buy" -> {
+                    case "buy" -> {
+                        if (Wheel.canBuyVowel(currentPlayer)) {
+                            System.out.println("\nWhich vowel would you like to buy?\n");
+                            Scanner input3 = new Scanner(System.in);
+                            char letter = input3.nextLine().toUpperCase().charAt(0);
 
-                }
-                case "solve" -> {
+                            if (!Wheel.isVowel(letter)) {
+                                System.out.println("\nWhy buy a consonant when you could spin for one instead? Please select a vowel.");
+                                Thread.sleep(1000);
+                            } else if (Wheel.selectedThisRound(letter)) {
+                                System.out.println("\nThis vowel has already been bought.");
+                                Thread.sleep(1000);
+                            } else {
+                                if (!Wheel.buyVowelAndIsValid(letter, (Integer) puzzle.get(2), currentPlayer)) {
+                                    player++;
+                                }
+                            }
+                        } else {
+                            System.out.println("\nYou don't have enough money to buy a vowel! Vowels cost $250.");
+                            Thread.sleep(1000);
+                        }
+                    }
+                    case "solve" -> {
 
+                    }
+                    case "end" -> {
+                        break end;
+                    }
+                    default -> {
+                        System.out.println("\nInvalid choice.");
+                        Thread.sleep(1000);
+                    }
                 }
-                default -> System.out.println("Invalid choice.");
             }
-        }
-
-//        dump player database table
+            System.out.println("\nThank you for playing!");
+            stmt.executeUpdate("TRUNCATE TABLE players");
+            stmt.executeUpdate("UPDATE letters SET selected_this_round = false WHERE selected_this_round = true");
+            PreparedStatement pstmt = Main.con.prepareStatement("UPDATE puzzles SET puzzle_hidden = ? WHERE puzzle_id = ?");
+            pstmt.setString(1, (String) puzzle.get(0));
+            pstmt.setInt(2, (Integer) puzzle.get(2));
+            pstmt.executeUpdate();
     }
 }
